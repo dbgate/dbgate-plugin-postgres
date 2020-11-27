@@ -3,7 +3,8 @@
   "main": "dist/backend.js",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "PostgreSQL connector pluginb for DbGate",
+  "description": "PostgreSQL connector plugin for DbGate",
+  "homepage": "https://github.com/dbshell/dbgate-plugin-postgres",
   "repository": {
     "type": "git",
     "url": "https://github.com/dbshell/dbgate-plugin-postgres.git"

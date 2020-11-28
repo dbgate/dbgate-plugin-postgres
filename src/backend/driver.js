@@ -4,6 +4,7 @@ const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const pg = require('pg');
 const pgQueryStream = require('pg-query-stream');
+const { createBulkInsertStreamBase } = require('dbgate-tools');
 
 /** @type {import('dbgate-types').EngineDriver} */
 const driver = {

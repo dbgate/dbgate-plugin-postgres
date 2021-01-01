@@ -4,36 +4,10 @@ const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const pg = require('pg');
 const pgQueryStream = require('pg-query-stream');
-const { createBulkInsertStreamBase } = require('dbgate-tools');
+const { createBulkInsertStreamBase, splitPostgresQuery } = require('dbgate-tools');
 
-/** @type {import('dbgate-types').EngineDriver} */
-const driver = {
-  ...driverBase,
-  analyserClass: Analyser,
-
-
-  async connect({ server, port, user, password, database }) {
-    const client = new pg.Client({
-      host: server,
-      port,
-      user,
-      password,
-      database: database || 'postgres',
-    });
-    await client.connect();
-    return client;
-  },
-  async query(client, sql) {
-    if (sql == null) {
-      return {
-        rows: [],
-        columns: [],
-      };
-    }
-    const res = await client.query(sql);
-    return { rows: res.rows, columns: res.fields };
-  },
-  async stream(client, sql, options) {
+async function runStreamItem(client, sql, options) {
+  return new Promise((resolve, reject) => {
     const query = new pgQueryStream(sql);
     const stream = client.query(query);
 
@@ -52,7 +26,7 @@ const driver = {
 
     const handleEnd = (result) => {
       // console.log('RESULT', result);
-      options.done(result);
+      resolve();
     };
 
     const handleReadable = () => {
@@ -91,8 +65,44 @@ const driver = {
     // stream.on('result', handleRow)
     // stream.on('data', handleRow)
     stream.on('end', handleEnd);
+  });
+}
 
-    return stream;
+/** @type {import('dbgate-types').EngineDriver} */
+const driver = {
+  ...driverBase,
+  analyserClass: Analyser,
+
+  async connect({ server, port, user, password, database }) {
+    const client = new pg.Client({
+      host: server,
+      port,
+      user,
+      password,
+      database: database || 'postgres',
+    });
+    await client.connect();
+    return client;
+  },
+  async query(client, sql) {
+    if (sql == null) {
+      return {
+        rows: [],
+        columns: [],
+      };
+    }
+    const res = await client.query(sql);
+    return { rows: res.rows, columns: res.fields };
+  },
+  async stream(client, sql, options) {
+    const sqlSplitted = splitPostgresQuery(sql);
+
+    for (const sqlItem of sqlSplitted) {
+      await runStreamItem(client, sqlItem, options);
+    }
+
+    options.done();
+    // return stream;
   },
   // async analyseSingleObject(pool, name, typeField = 'tables') {
   //   const analyser = new PostgreAnalyser(pool, this);

@@ -951,10 +951,10 @@ dbgate-plugin-tools@^1.0.4:
     pacote "^11.1.13"
     rimraf "^3.0.2"
 
-dbgate-tools@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/dbgate-tools/-/dbgate-tools-1.0.5.tgz#f4ff0e6fd76b6637eab948ee5bd51257add89579"
-  integrity sha512-A9oVv5Qx9oRC3P6D0VlZlaw2zR4BBySqmHHl9IuYWMjPUCNXVVQBKIQjMhWvkWM2Bcxd3YSipc9HEFvOf3YUiA==
+dbgate-tools@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/dbgate-tools/-/dbgate-tools-1.0.7.tgz#09a41bac51fad4285904796529c43356a51cb8aa"
+  integrity sha512-yLDGm8kq0hJS+RYn4fZGAaoMpAFUMqbVUFQHzZkntzAvAFRYZ/s5ilL/89qjif7cjCS5H12WnL1UJKER1FM40g==
   dependencies:
     lodash "^4.17.15"
 

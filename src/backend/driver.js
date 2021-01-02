@@ -58,6 +58,7 @@ async function runStreamItem(client, sql, options) {
         time: new Date(),
         severity: 'error',
       });
+      resolve();
     };
 
     stream.on('error', handleError);

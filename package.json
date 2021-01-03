@@ -1,7 +1,7 @@
 {
   "name": "dbgate-plugin-postgres",
   "main": "dist/backend.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "description": "PostgreSQL connector plugin for DbGate",
   "homepage": "https://github.com/dbshell/dbgate-plugin-postgres",

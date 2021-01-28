@@ -4,11 +4,27 @@ const driverBase = require('../frontend/driver');
 const Analyser = require('./Analyser');
 const pg = require('pg');
 const pgQueryStream = require('pg-query-stream');
-const { createBulkInsertStreamBase, splitPostgresQuery } = require('dbgate-tools');
+const { createBulkInsertStreamBase, splitPostgresQuery, makeUniqueColumnNames } = require('dbgate-tools');
+
+function extractPostgresColumns(result) {
+  if (!result || !result.fields) return [];
+  const res = result.fields.map((fld) => ({
+    columnName: fld.name,
+  }));
+  makeUniqueColumnNames(res);
+  return res;
+}
+
+function zipDataRow(rowArray, columns) {
+  return _.zipObject(
+    columns.map((x) => x.columnName),
+    rowArray
+  );
+}
 
 async function runStreamItem(client, sql, options) {
   return new Promise((resolve, reject) => {
-    const query = new pgQueryStream(sql);
+    const query = new pgQueryStream(sql, undefined, { rowMode: 'array' });
     const stream = client.query(query);
 
     // const handleInfo = (info) => {
@@ -29,16 +45,19 @@ async function runStreamItem(client, sql, options) {
       resolve();
     };
 
+    let columns = null;
     const handleReadable = () => {
-      let row = stream.read();
-      if (!wasHeader && row) {
-        options.recordset(_.keys(row).map((columnName) => ({ columnName })));
+      if (!wasHeader) {
+        columns = extractPostgresColumns(query._result);
+        options.recordset(columns);
         wasHeader = true;
       }
 
-      while (row) {
-        options.row(row);
-        row = stream.read();
+      for (;;) {
+        const row = stream.read();
+        if (!row) break;
+
+        options.row(zipDataRow(row, columns));
       }
     };
 
@@ -92,8 +111,9 @@ const driver = {
         columns: [],
       };
     }
-    const res = await client.query(sql);
-    return { rows: res.rows, columns: res.fields };
+    const res = await client.query({ text: sql, rowMode: 'array' });
+    const columns = extractPostgresColumns(res);
+    return { rows: res.rows.map((row) => zipDataRow(row, columns)), columns };
   },
   async stream(client, sql, options) {
     const sqlSplitted = splitPostgresQuery(sql);

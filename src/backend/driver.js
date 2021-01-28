@@ -149,7 +149,7 @@ const driver = {
   //   return analyser.incrementalAnalysis(structure);
   // },
   async readQuery(client, sql, structure) {
-    const query = new pgQueryStream(sql);
+    const query = new pgQueryStream(sql, undefined, { rowMode: 'array' });
 
     const queryStream = client.query(query);
 
@@ -164,20 +164,19 @@ const driver = {
       pass.end();
     };
 
+    let columns = null;
     const handleReadable = () => {
-      let row = queryStream.read();
-      if (!wasHeader && row) {
-        pass.write(
-          structure || {
-            columns: _.keys(row).map((columnName) => ({ columnName })),
-          }
-        );
+      if (!wasHeader) {
+        columns = extractPostgresColumns(query._result);
+        pass.write(structure || { columns });
         wasHeader = true;
       }
 
-      while (row) {
-        pass.write(row);
-        row = queryStream.read();
+      for (;;) {
+        const row = queryStream.read();
+        if (!row) break;
+
+        pass.write(zipDataRow(row, columns));
       }
     };
 

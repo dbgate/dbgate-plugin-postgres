@@ -4,10 +4,10 @@
   "version": "1.0.3",
   "license": "MIT",
   "description": "PostgreSQL connector plugin for DbGate",
-  "homepage": "https://github.com/dbshell/dbgate-plugin-postgres",
+  "homepage": "https://github.com/dbgate/dbgate-plugin-postgres",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dbshell/dbgate-plugin-postgres.git"
+    "url": "https://github.com/dbgate/dbgate-plugin-postgres.git"
   },
   "funding": "https://www.paypal.com/paypalme/JanProchazkaCz/30eur",
   "author": "Jan Prochazka",

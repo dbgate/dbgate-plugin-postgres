@@ -20,6 +20,7 @@ const driver = {
   dialect,
   engine: 'postgres@dbgate-plugin-postgres',
   title: 'Postgre SQL',
+  defaultPort: 5432,
 };
 
 module.exports = driver;

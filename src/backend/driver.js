@@ -93,13 +93,14 @@ const driver = {
   ...driverBase,
   analyserClass: Analyser,
 
-  async connect({ server, port, user, password, database }) {
+  async connect({ server, port, user, password, database, ssl }) {
     const client = new pg.Client({
       host: server,
       port,
       user,
       password,
       database: database || 'postgres',
+      ssl,
     });
     await client.connect();
     return client;

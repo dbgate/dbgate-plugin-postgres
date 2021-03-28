@@ -7,6 +7,8 @@ const dialect = {
   // stringEscapeChar: '\\',
   stringEscapeChar: "'",
   fallbackDataType: 'varchar',
+  anonymousPrimaryKey: true,
+  enableConstraintsPerTable: true,
   quoteIdentifier(s) {
     return '"' + s + '"';
   },

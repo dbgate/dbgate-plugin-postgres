@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "dbgate-plugin-tools": "^1.0.4",
-    "dbgate-tools": "^1.0.8",
+    "dbgate-tools": "^4.0.0-rc.2",
     "lodash": "^4.17.15",
     "pg": "^7.17.0",
     "pg-query-stream": "^3.1.1",

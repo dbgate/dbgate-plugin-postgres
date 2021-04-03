@@ -77,27 +77,36 @@ class Analyser extends DatabaseAnalyser {
     const routines = await this.driver.query(this.pool, this.createQuery('routines', ['procedures', 'functions']));
     // console.log('PG fkColumns', fkColumns.rows);
 
-    return this.mergeAnalyseResult(
-      {
-        tables: tables.rows.map((table) => ({
-          ...table,
-          columns: columns.rows
-            .filter((col) => col.pureName == table.pureName && col.schemaName == table.schemaName)
-            .map(getColumnInfo),
-          primaryKey: DatabaseAnalyser.extractPrimaryKeys(table, pkColumns.rows),
-          foreignKeys: DatabaseAnalyser.extractForeignKeys(table, fkColumns.rows),
+    return this.mergeAnalyseResult({
+      tables: tables.rows.map((table) => ({
+        ...table,
+        objectId: `tables:${table.schemaName}.${table.pureName}`,
+        columns: columns.rows
+          .filter((col) => col.pureName == table.pureName && col.schemaName == table.schemaName)
+          .map(getColumnInfo),
+        primaryKey: DatabaseAnalyser.extractPrimaryKeys(table, pkColumns.rows),
+        foreignKeys: DatabaseAnalyser.extractForeignKeys(table, fkColumns.rows),
+      })),
+      views: views.rows.map((view) => ({
+        ...view,
+        objectId: `views:${view.schemaName}.${view.pureName}`,
+        columns: columns.rows
+          .filter((col) => col.pureName == view.pureName && col.schemaName == view.schemaName)
+          .map(getColumnInfo),
+      })),
+      procedures: routines.rows
+        .filter((x) => x.objectType == 'PROCEDURE')
+        .map((proc) => ({
+          objectId: `procedures:${proc.schemaName}.${proc.pureName}`,
+          ...proc,
         })),
-        views: views.rows.map((view) => ({
-          ...view,
-          columns: columns.rows
-            .filter((col) => col.pureName == view.pureName && col.schemaName == view.schemaName)
-            .map(getColumnInfo),
+      functions: routines.rows
+        .filter((x) => x.objectType == 'FUNCTION')
+        .map((func) => ({
+          objectId: `functions:${func.schemaName}.${func.pureName}`,
+          ...func,
         })),
-        procedures: routines.rows.filter((x) => x.objectType == 'PROCEDURE'),
-        functions: routines.rows.filter((x) => x.objectType == 'FUNCTION'),
-      },
-      (x) => `${x.objectTypeField}:${x.schemaName}.${x.pureName}`
-    );
+    });
   }
 
   async getModifications() {
@@ -134,11 +143,13 @@ class Analyser extends DatabaseAnalyser {
             oldName: _.pick(obj, ['schemaName', 'pureName']),
             action: 'change',
             objectTypeField,
+            objectId: `${objectTypeField}:${schemaName}.${pureName}`,
           }
         : {
             newName: { schemaName, pureName },
             action: 'add',
             objectTypeField,
+            objectId: `${objectTypeField}:${schemaName}.${pureName}`,
           };
       return action;
     });
@@ -156,6 +167,7 @@ class Analyser extends DatabaseAnalyser {
         oldName: _.pick(x, ['schemaName', 'pureName']),
         action: 'remove',
         objectTypeField,
+        objectId: `${objectTypeField}:${x.schemaName}.${x.pureName}`,
       }));
   }
 

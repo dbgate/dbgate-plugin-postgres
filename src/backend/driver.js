@@ -49,7 +49,9 @@ async function runStreamItem(client, sql, options) {
     const handleReadable = () => {
       if (!wasHeader) {
         columns = extractPostgresColumns(query._result);
-        options.recordset(columns);
+        if (columns && columns.length > 0) {
+          options.recordset(columns);
+        }
         wasHeader = true;
       }
 

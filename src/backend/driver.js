@@ -8,7 +8,7 @@ const { createBulkInsertStreamBase, splitPostgresQuery, makeUniqueColumnNames } 
 
 function extractPostgresColumns(result) {
   if (!result || !result.fields) return [];
-  const res = result.fields.map((fld) => ({
+  const res = result.fields.map(fld => ({
     columnName: fld.name,
   }));
   makeUniqueColumnNames(res);
@@ -17,7 +17,7 @@ function extractPostgresColumns(result) {
 
 function zipDataRow(rowArray, columns) {
   return _.zipObject(
-    columns.map((x) => x.columnName),
+    columns.map(x => x.columnName),
     rowArray
   );
 }
@@ -40,7 +40,7 @@ async function runStreamItem(client, sql, options) {
 
     let wasHeader = false;
 
-    const handleEnd = (result) => {
+    const handleEnd = result => {
       // console.log('RESULT', result);
       resolve();
     };
@@ -69,7 +69,7 @@ async function runStreamItem(client, sql, options) {
     //   // options.recordset(extractColumns(columns));
     // };
 
-    const handleError = (error) => {
+    const handleError = error => {
       console.log('ERROR', error);
       const { message, lineNumber, procName } = error;
       options.info({
@@ -116,7 +116,7 @@ const driver = {
     }
     const res = await client.query({ text: sql, rowMode: 'array' });
     const columns = extractPostgresColumns(res);
-    return { rows: res.rows.map((row) => zipDataRow(row, columns)), columns };
+    return { rows: res.rows.map(row => zipDataRow(row, columns)), columns };
   },
   async stream(client, sql, options) {
     const sqlSplitted = splitPostgresQuery(sql);
@@ -163,7 +163,7 @@ const driver = {
       highWaterMark: 100,
     });
 
-    const handleEnd = (result) => {
+    const handleEnd = result => {
       pass.end();
     };
 
@@ -186,7 +186,7 @@ const driver = {
       }
     };
 
-    const handleError = (error) => {
+    const handleError = error => {
       console.error(error);
       pass.end();
     };

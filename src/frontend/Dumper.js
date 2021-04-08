@@ -26,23 +26,22 @@ class Dumper extends SqlDumper {
     }
   }
 
-
   dropRecreatedTempTable(tmptable) {
-    this.putCmd("^drop ^table %i ^cascade", tmptable);
+    this.putCmd('^drop ^table %i ^cascade', tmptable);
   }
 
   renameTable(obj, newname) {
-    this.putCmd("^alter ^table %f ^rename ^to %i", obj, newname);
+    this.putCmd('^alter ^table %f ^rename ^to %i', obj, newname);
   }
 
   renameColumn(column, newcol) {
-    this.putCmd("^alter ^table %f ^rename ^column %i ^to %i", column, column.columnName, newcol);
+    this.putCmd('^alter ^table %f ^rename ^column %i ^to %i', column, column.columnName, newcol);
   }
 
   dropTable(obj, options = {}) {
-    this.put("^drop ^table");
-    if (options.testIfExists) this.put(" ^if ^exists");
-    this.put(" %f", obj.FullName);
+    this.put('^drop ^table');
+    if (options.testIfExists) this.put(' ^if ^exists');
+    this.put(' %f', obj.FullName);
     this.endCommand();
   }
 
@@ -51,13 +50,13 @@ class Dumper extends SqlDumper {
   //}
 
   enableConstraints(table, enabled) {
-    this.putCmd("^alter ^table %f %k ^trigger ^all", table, enabled ? "enable" : "disable");
+    this.putCmd('^alter ^table %f %k ^trigger ^all', table, enabled ? 'enable' : 'disable');
   }
 
   columnDefinition(col, options) {
-    const { autoIncrement } = options || {}
+    const { autoIncrement } = options || {};
     if (col.autoIncrement) {
-      this.put("^serial");
+      this.put('^serial');
       return;
     }
     super.columnDefinition(col, options);

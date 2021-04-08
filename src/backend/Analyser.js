@@ -53,13 +53,13 @@ class Analyser extends DatabaseAnalyser {
       res = res.replace(/=OBJECT_ID_CONDITION/g, ' is not null');
     } else {
       const filterNames = this.modifications
-        .filter((x) => typeFields.includes(x.objectTypeField) && (x.action == 'add' || x.action == 'change'))
-        .filter((x) => x.newName)
-        .map((x) => `${x.objectTypeField}:${x.newName.schemaName}.${x.newName.pureName}`);
+        .filter(x => typeFields.includes(x.objectTypeField) && (x.action == 'add' || x.action == 'change'))
+        .filter(x => x.newName)
+        .map(x => `${x.objectTypeField}:${x.newName.schemaName}.${x.newName.pureName}`);
       if (filterNames.length == 0) {
         res = res.replace(/=OBJECT_ID_CONDITION/g, ' IS NULL');
       } else {
-        res = res.replace(/=OBJECT_ID_CONDITION/g, ` in (${filterNames.map((x) => `'${x}'`).join(',')})`);
+        res = res.replace(/=OBJECT_ID_CONDITION/g, ` in (${filterNames.map(x => `'${x}'`).join(',')})`);
       }
     }
     return res;
@@ -78,31 +78,31 @@ class Analyser extends DatabaseAnalyser {
     // console.log('PG fkColumns', fkColumns.rows);
 
     return this.mergeAnalyseResult({
-      tables: tables.rows.map((table) => ({
+      tables: tables.rows.map(table => ({
         ...table,
         objectId: `tables:${table.schemaName}.${table.pureName}`,
         columns: columns.rows
-          .filter((col) => col.pureName == table.pureName && col.schemaName == table.schemaName)
+          .filter(col => col.pureName == table.pureName && col.schemaName == table.schemaName)
           .map(getColumnInfo),
         primaryKey: DatabaseAnalyser.extractPrimaryKeys(table, pkColumns.rows),
         foreignKeys: DatabaseAnalyser.extractForeignKeys(table, fkColumns.rows),
       })),
-      views: views.rows.map((view) => ({
+      views: views.rows.map(view => ({
         ...view,
         objectId: `views:${view.schemaName}.${view.pureName}`,
         columns: columns.rows
-          .filter((col) => col.pureName == view.pureName && col.schemaName == view.schemaName)
+          .filter(col => col.pureName == view.pureName && col.schemaName == view.schemaName)
           .map(getColumnInfo),
       })),
       procedures: routines.rows
-        .filter((x) => x.objectType == 'PROCEDURE')
-        .map((proc) => ({
+        .filter(x => x.objectType == 'PROCEDURE')
+        .map(proc => ({
           objectId: `procedures:${proc.schemaName}.${proc.pureName}`,
           ...proc,
         })),
       functions: routines.rows
-        .filter((x) => x.objectType == 'FUNCTION')
-        .map((func) => ({
+        .filter(x => x.objectType == 'FUNCTION')
+        .map(func => ({
           objectId: `functions:${func.schemaName}.${func.pureName}`,
           ...func,
         })),
@@ -115,21 +115,21 @@ class Analyser extends DatabaseAnalyser {
     const routineModificationsQueryData = await this.driver.query(this.pool, this.createQuery('routineModifications'));
 
     const allModifications = _.compact([
-      ...tableModificationsQueryData.rows.map((x) => ({ ...x, objectTypeField: 'tables' })),
-      ...viewModificationsQueryData.rows.map((x) => ({ ...x, objectTypeField: 'views' })),
+      ...tableModificationsQueryData.rows.map(x => ({ ...x, objectTypeField: 'tables' })),
+      ...viewModificationsQueryData.rows.map(x => ({ ...x, objectTypeField: 'views' })),
       ...routineModificationsQueryData.rows
-        .filter((x) => x.objectType == 'PROCEDURE')
-        .map((x) => ({ ...x, objectTypeField: 'procedures' })),
+        .filter(x => x.objectType == 'PROCEDURE')
+        .map(x => ({ ...x, objectTypeField: 'procedures' })),
       ...routineModificationsQueryData.rows
-        .filter((x) => x.objectType == 'FUNCTION')
-        .map((x) => ({ ...x, objectTypeField: 'functions' })),
+        .filter(x => x.objectType == 'FUNCTION')
+        .map(x => ({ ...x, objectTypeField: 'functions' })),
     ]);
 
-    const modifications = allModifications.map((x) => {
+    const modifications = allModifications.map(x => {
       const { objectTypeField, hashCode, pureName, schemaName } = x;
 
       if (!objectTypeField || !this.structure[objectTypeField]) return null;
-      const obj = this.structure[objectTypeField].find((x) => x.pureName == pureName && x.schemaName == schemaName);
+      const obj = this.structure[objectTypeField].find(x => x.pureName == pureName && x.schemaName == schemaName);
 
       // object not modified
       if (obj && obj.hashCode == hashCode) return null;
@@ -156,14 +156,14 @@ class Analyser extends DatabaseAnalyser {
 
     return [
       ..._.compact(modifications),
-      ...this.getDeletedObjects([...allModifications.map((x) => `${x.schemaName}.${x.pureName}`)]),
+      ...this.getDeletedObjects([...allModifications.map(x => `${x.schemaName}.${x.pureName}`)]),
     ];
   }
 
   getDeletedObjectsForField(nameArray, objectTypeField) {
     return this.structure[objectTypeField]
-      .filter((x) => !nameArray.includes(`${x.schemaName}.${x.pureName}`))
-      .map((x) => ({
+      .filter(x => !nameArray.includes(`${x.schemaName}.${x.pureName}`))
+      .map(x => ({
         oldName: _.pick(x, ['schemaName', 'pureName']),
         action: 'remove',
         objectTypeField,

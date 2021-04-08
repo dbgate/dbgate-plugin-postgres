@@ -171,7 +171,10 @@ const driver = {
     const handleReadable = () => {
       if (!wasHeader) {
         columns = extractPostgresColumns(query._result);
-        pass.write(structure || { columns });
+        pass.write({
+          __isStreamHeader: true,
+          ...(structure || { columns }),
+        });
         wasHeader = true;
       }
 
